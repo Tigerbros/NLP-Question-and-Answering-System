@@ -1,0 +1,73 @@
+"""Streamlit front end for the OpenRouter Q&A system."""
+
+import os
+from typing import Optional
+
+import streamlit as st
+
+from qa_utils import DEFAULT_MODEL, run_qa_pipeline
+
+st.set_page_config(page_title="OpenRouter Q&A", page_icon="❓")
+
+
+def get_api_key() -> Optional[str]:
+    api_key = st.sidebar.text_input(
+        "OpenRouter API Key",
+        value=os.getenv("OPENROUTER_API_KEY", ""),
+        type="password",
+        help="Stored locally only for this session.",
+    )
+    if api_key:
+        st.session_state["OPENROUTER_API_KEY"] = api_key
+    return api_key or st.session_state.get("OPENROUTER_API_KEY")
+
+
+def render_sidebar() -> str:
+    st.sidebar.header("Configuration")
+    get_api_key()
+    model = st.sidebar.text_input("Model", value=DEFAULT_MODEL)
+    st.sidebar.markdown(
+        "Using OpenRouter's free tier models. Update the name if you upgrade."
+    )
+    return model
+
+
+def main() -> None:
+    st.title("PromptPilot Q&A (OpenRouter)")
+    st.write(
+        "Ask a question, review the preprocessed text, and preview the prompt sent to the LLM."
+    )
+
+    model = render_sidebar()
+    api_key = st.session_state.get("OPENROUTER_API_KEY") or os.getenv("OPENROUTER_API_KEY")
+
+    question = st.text_area("Your question", placeholder="How can I improve my focus while studying?")
+    if st.button("Submit"):
+        if not question.strip():
+            st.warning("Please enter a question first.")
+            return
+
+        with st.spinner("Waiting for OpenRouter..."):
+            try:
+                result = run_qa_pipeline(question, model=model, api_key=api_key)
+            except Exception as exc:  # noqa: BLE001
+                st.error(f"Failed to reach OpenRouter: {exc}")
+                return
+
+        processed = result["processed"]
+        prompt = result["prompt"]
+        response = result["answer"]
+
+        with st.expander("Processed question"):
+            st.write(processed["cleaned"])
+            st.write({"tokens": processed["tokens"]})
+
+        with st.expander("Rendered prompt"):
+            st.code(prompt)
+
+        st.subheader("LLM response")
+        st.write(response)
+
+
+if __name__ == "__main__":
+    main()
