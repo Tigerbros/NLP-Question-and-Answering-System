@@ -11,6 +11,12 @@ Install dependencies:
 pip install -r requirements.txt  # Streamlit UI only; the CLI uses stdlib networking
 ```
 
+Copy the sample environment file and keep your real key out of version control:
+```bash
+cp .env.example .env
+echo "OPENROUTER_API_KEY=sk-or-..." >> .env  # .env is already gitignored
+```
+
 ## Prompt and processing
 - The reusable template lives in [`prompts/qa_prompt.txt`](prompts/qa_prompt.txt) and is tailored for concise, assumption-aware answers.
 - Questions are lowercased, punctuation is removed, and tokens are displayed so you can see how the text is cleaned before being sent to the model.
@@ -48,6 +54,10 @@ Features:
 - Text area for the user's question.
 - Expanders showing the processed question (cleaned text and tokens) and rendered prompt.
 - Live OpenRouter calls with inline error reporting and an end-to-end pipeline that pre-processes your question before sending it to the LLM.
+
+### Streamlit Cloud secrets
+- Add `OPENROUTER_API_KEY` to **Secrets** in Streamlit Cloud (preferred) or set it as an environment variable in your hosting platform.
+- The UI reads secrets first, then session state, then environment variables. No keys are committed to the repository.
 
 ## Part C — Deployment notes
 The Streamlit UI can be deployed on Streamlit Cloud, Render, PythonAnywhere, or similar services. Before deploying:

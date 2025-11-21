@@ -11,15 +11,23 @@ st.set_page_config(page_title="OpenRouter Q&A", page_icon="❓")
 
 
 def get_api_key() -> Optional[str]:
+    """Return the API key, preferring Streamlit secrets when set."""
+
+    preset = st.secrets.get("OPENROUTER_API_KEY", "") if hasattr(st, "secrets") else ""
+    env_default = os.getenv("OPENROUTER_API_KEY", os.getenv("OPEN_ROUTER_KEY", ""))
+    initial_value = st.session_state.get("OPENROUTER_API_KEY", preset or env_default)
+
     api_key = st.sidebar.text_input(
         "OpenRouter API Key",
-        value=os.getenv("OPENROUTER_API_KEY", ""),
+        value=initial_value,
         type="password",
-        help="Stored locally only for this session.",
+        help=(
+            "Stored locally for this session. Use Streamlit secrets or host-level env vars to keep it private."
+        ),
     )
     if api_key:
         st.session_state["OPENROUTER_API_KEY"] = api_key
-    return api_key or st.session_state.get("OPENROUTER_API_KEY")
+    return api_key or st.session_state.get("OPENROUTER_API_KEY") or preset or env_default
 
 
 def render_sidebar() -> str:
