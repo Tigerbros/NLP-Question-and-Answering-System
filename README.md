@@ -53,7 +53,7 @@ Features:
 - Sidebar fields for OpenRouter API key (persisted for the session) and model name (default `x-ai/grok-4.1-fast:free`).
 - Text area for the user's question.
 - Expanders showing the processed question (cleaned text and tokens) and rendered prompt.
-- Live OpenRouter calls with inline error reporting and an end-to-end pipeline that pre-processes your question before sending it to the LLM.
+- Live OpenRouter calls with inline error reporting and an end-to-end pipeline that pre-processes your question before sending it to the LLM. Submissions are blocked until an API key is provided via sidebar, secrets, or `OPENROUTER_API_KEY`/`OPEN_ROUTER_KEY` environment variables.
 
 ### Streamlit Cloud secrets
 - Add `OPENROUTER_API_KEY` to **Secrets** in Streamlit Cloud (preferred) or set it as an environment variable in your hosting platform.

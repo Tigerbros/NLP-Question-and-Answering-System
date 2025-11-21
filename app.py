@@ -30,14 +30,14 @@ def get_api_key() -> Optional[str]:
     return api_key or st.session_state.get("OPENROUTER_API_KEY") or preset or env_default
 
 
-def render_sidebar() -> str:
+def render_sidebar() -> tuple[str, str]:
     st.sidebar.header("Configuration")
-    get_api_key()
+    api_key = get_api_key()
     model = st.sidebar.text_input("Model", value=DEFAULT_MODEL)
     st.sidebar.markdown(
         "Using OpenRouter's free tier models. Update the name if you upgrade."
     )
-    return model
+    return api_key, model
 
 
 def main() -> None:
@@ -46,11 +46,15 @@ def main() -> None:
         "Ask a question, review the preprocessed text, and preview the prompt sent to the LLM."
     )
 
-    model = render_sidebar()
-    api_key = st.session_state.get("OPENROUTER_API_KEY") or os.getenv("OPENROUTER_API_KEY")
+    api_key, model = render_sidebar()
+    if not api_key:
+        api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPEN_ROUTER_KEY")
 
     question = st.text_area("Your question", placeholder="How can I improve my focus while studying?")
     if st.button("Submit"):
+        if not api_key:
+            st.error("Please provide an OpenRouter API key in the sidebar or your environment.")
+            return
         if not question.strip():
             st.warning("Please enter a question first.")
             return
